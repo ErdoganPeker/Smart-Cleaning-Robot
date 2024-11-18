@@ -1,0 +1,20 @@
+Room 0 0 40 15
+Room 0 15 40 35
+Room 0 35 40 50
+Room 40 0 70 15
+Room 70 0 100 15
+Room 70 15 100 50
+Room 40 15 70 25
+Room 40 25 50 35
+Room 50 25 60 35
+Room 60 25 70 50
+Obstacle 30 10
+Obstacle 20 20
+Obstacle 40 40
+Obstacle 50 10
+Obstacle 80 10
+Obstacle 90 40
+Obstacle 60 20
+Obstacle 42 30
+Obstacle 52 30
+Obstacle 65 40

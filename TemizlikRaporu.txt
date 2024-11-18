@@ -1,0 +1,76 @@
+Cleaning Report:
+Cleaned Area: 35 units^2
+Cleaning Time: 70 minutes
+Remaining Battery Life: 65%
+Encountered Obstacles: 10
+Obstacle at: (30, 10)
+Obstacle at: (20, 20)
+Obstacle at: (40, 40)
+Obstacle at: (50, 10)
+Obstacle at: (80, 10)
+Obstacle at: (90, 40)
+Obstacle at: (60, 20)
+Obstacle at: (42, 30)
+Obstacle at: (52, 30)
+Obstacle at: (65, 40)
+--------------------------
+Rapor :
+Temizlenenen Alan : 8 metre^2
+Temizlenme Suresi : 16 dakika
+Kalan sarj yuzdesi : 92%
+Karsilasilan Engel Sayisi :10
+Engel Konumu : (30, 10)
+Engel Konumu : (20, 20)
+Engel Konumu : (40, 40)
+Engel Konumu : (50, 10)
+Engel Konumu : (80, 10)
+Engel Konumu : (90, 40)
+Engel Konumu : (60, 20)
+Engel Konumu : (42, 30)
+Engel Konumu : (52, 30)
+Engel Konumu : (65, 40)
+Rapor :
+Temizlenenen Alan : 8 metre^2
+Temizlenme Suresi : 16 dakika
+Kalan sarj yuzdesi : 92%
+Karsilasilan Engel Sayisi :10
+Engel Konumu : (30, 10)
+Engel Konumu : (20, 20)
+Engel Konumu : (40, 40)
+Engel Konumu : (50, 10)
+Engel Konumu : (80, 10)
+Engel Konumu : (90, 40)
+Engel Konumu : (60, 20)
+Engel Konumu : (42, 30)
+Engel Konumu : (52, 30)
+Engel Konumu : (65, 40)
+Rapor :
+Temizlenenen Alan : 6 metre^2
+Temizlenme Suresi : 12 dakika
+Kalan sarj yuzdesi : 94%
+Karsilasilan Engel Sayisi :10
+Engel Konumu : (30, 10)
+Engel Konumu : (20, 20)
+Engel Konumu : (40, 40)
+Engel Konumu : (50, 10)
+Engel Konumu : (80, 10)
+Engel Konumu : (90, 40)
+Engel Konumu : (60, 20)
+Engel Konumu : (42, 30)
+Engel Konumu : (52, 30)
+Engel Konumu : (65, 40)
+Rapor :
+Temizlenenen Alan : 8 metre^2
+Temizlenme Suresi : 16 dakika
+Kalan sarj yuzdesi : 92%
+Karsilasilan Engel Sayisi :10
+Engel Konumu : (30, 10)
+Engel Konumu : (20, 20)
+Engel Konumu : (40, 40)
+Engel Konumu : (50, 10)
+Engel Konumu : (80, 10)
+Engel Konumu : (90, 40)
+Engel Konumu : (60, 20)
+Engel Konumu : (42, 30)
+Engel Konumu : (52, 30)
+Engel Konumu : (65, 40)
