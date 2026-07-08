@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
-import uvicorn, json, random
+import uvicorn, json, random, os
 
 app = FastAPI()
-templates = Jinja2Templates(directory="templates")
+_dir = os.path.dirname(os.path.abspath(__file__))
+templates = Jinja2Templates(directory=os.path.join(_dir, "templates"))
 
 def generate_room(rows=18, cols=24, seed=42):
     random.seed(seed)
