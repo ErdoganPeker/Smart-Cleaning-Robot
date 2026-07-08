@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Smart Cleaning Robot</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#050508;color:#e2e8f0;font-family:system-ui,sans-serif;min-height:100vh;padding:2rem}
+.container{max-width:800px;margin:0 auto}
+.badge{display:inline-block;background:#00d4ff15;border:1px solid #00d4ff33;color:#00d4ff;border-radius:999px;padding:.25rem .75rem;font-size:.75rem;margin-bottom:1rem}
+h1{font-size:1.75rem;font-weight:800;margin-bottom:.4rem;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{color:#64748b;font-size:.875rem;margin-bottom:1.5rem}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem}
+.stat{background:#13131f;border:1px solid #1e1e35;border-radius:10px;padding:.75rem;text-align:center}
+.stat-val{font-size:1.4rem;font-weight:800;color:#00d4ff}
+.stat-lbl{font-size:.7rem;color:#64748b;margin-top:.2rem}
+.controls{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+button{padding:.6rem 1.2rem;background:#00d4ff;color:#050508;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.85rem}
+button.sec{background:#13131f;border:1px solid #1e1e35;color:#94a3b8}
+#status{font-size:.8rem;color:#00d4ff;min-height:1.2rem}
+.map-wrap{background:#13131f;border:1px solid #1e1e35;border-radius:12px;padding:1rem;overflow-x:auto}
+#grid-canvas{display:block}
+</style>
+</head>
+<body>
+<div class="container">
+  <span class="badge">🤖 C++ Simulation</span>
+  <h1>Smart Cleaning Robot</h1>
+  <p class="sub">Autonomous robot navigating and cleaning a room using systematic coverage algorithm.</p>
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="s-cleaned">{{cleaned}}</div><div class="stat-lbl">Cells Cleaned</div></div>
+    <div class="stat"><div class="stat-val" id="s-total">{{total}}</div><div class="stat-lbl">Total Cells</div></div>
+    <div class="stat"><div class="stat-val" id="s-eff">{{efficiency}}%</div><div class="stat-lbl">Efficiency</div></div>
+  </div>
+  <div class="controls">
+    <button onclick="startAnimation()">▶ Start Cleaning</button>
+    <button class="sec" onclick="newRoom()">🔀 New Room</button>
+    <span id="status"></span>
+  </div>
+  <div class="map-wrap"><canvas id="grid-canvas"></canvas></div>
+</div>
+<script>
+const GRID=JSON.parse('{{grid|safe}}');
+const PATH=JSON.parse('{{path|safe}}');
+const CELL=14;
+let animTimer=null;
+let step=0;
+let cleaned=new Set();
+
+const canvas=document.getElementById('grid-canvas');
+const rows=GRID.length, cols=GRID[0].length;
+canvas.width=cols*CELL; canvas.height=rows*CELL;
+const ctx=canvas.getContext('2d');
+
+function draw(robotR,robotC){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
+    const x=c*CELL,y=r*CELL;
+    if(GRID[r][c]==='W'){ctx.fillStyle='#374151';}
+    else if(cleaned.has(r+','+c)){ctx.fillStyle='#00d4ff18';}
+    else{ctx.fillStyle='#0e0e16';}
+    ctx.fillRect(x,y,CELL-1,CELL-1);
+  }
+  if(robotR!=null){
+    ctx.fillStyle='#00d4ff';
+    ctx.beginPath();
+    ctx.arc(robotC*CELL+CELL/2,robotR*CELL+CELL/2,CELL/2-1,0,Math.PI*2);
+    ctx.fill();
+  }
+}
+
+draw(null,null);
+
+function startAnimation(){
+  if(animTimer)clearInterval(animTimer);
+  step=0;cleaned=new Set();
+  document.getElementById('status').textContent='Cleaning...';
+  animTimer=setInterval(()=>{
+    if(step>=PATH.length){clearInterval(animTimer);document.getElementById('status').textContent='Done!';draw(null,null);return;}
+    const [r,c]=PATH[step];cleaned.add(r+','+c);draw(r,c);step+=3;
+  },50);
+}
+
+async function newRoom(){
+  const seed=Math.floor(Math.random()*1000);
+  const resp=await fetch('/new?seed='+seed);
+  const j=await resp.json();
+  document.getElementById('s-cleaned').textContent=j.cleaned;
+  document.getElementById('s-total').textContent=j.total;
+  document.getElementById('s-eff').textContent=j.efficiency+'%';
+  location.reload();
+}
+</script>
+</body>
+</html>
