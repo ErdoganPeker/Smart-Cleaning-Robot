@@ -2,94 +2,424 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Smart Cleaning Robot</title>
 <style>
+:root{
+  --bg:#050508; --panel:#12121c; --panel2:#181828; --border:#232338;
+  --text:#e2e8f0; --muted:#7c8aa5; --accent:#00d4ff; --accent2:#7c3aed;
+  --ok:#22d3a8; --warn:#f5b942; --danger:#f5576c;
+  --floor:#0e0e16; --wall:#333349; --furniture:#8a5a3a; --furniture-b:#6d4527;
+  --dirt1:#4b3a1e; --dirt2:#7a5220; --dirt3:#a8661c;
+  --grid-gap:#050508;
+}
+:root[data-theme="light"]{
+  --bg:#eef1f6; --panel:#ffffff; --panel2:#f3f5f9; --border:#dbe1ec;
+  --text:#1c2333; --muted:#5b6579; --accent:#0891b2; --accent2:#7c3aed;
+  --ok:#0d9668; --warn:#b8790a; --danger:#d63a55;
+  --floor:#e4e9f1; --wall:#94a0b8; --furniture:#c98f5c; --furniture-b:#a5703e;
+  --dirt1:#dcc79a; --dirt2:#c9a45f; --dirt3:#b07f2e;
+  --grid-gap:#eef1f6;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#eef1f6; --panel:#ffffff; --panel2:#f3f5f9; --border:#dbe1ec;
+    --text:#1c2333; --muted:#5b6579; --accent:#0891b2; --accent2:#7c3aed;
+    --ok:#0d9668; --warn:#b8790a; --danger:#d63a55;
+    --floor:#e4e9f1; --wall:#94a0b8; --furniture:#c98f5c; --furniture-b:#a5703e;
+    --dirt1:#dcc79a; --dirt2:#c9a45f; --dirt3:#b07f2e;
+    --grid-gap:#eef1f6;
+  }
+}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#050508;color:#e2e8f0;font-family:system-ui,sans-serif;min-height:100vh;padding:2rem}
-.container{max-width:800px;margin:0 auto}
-.badge{display:inline-block;background:#00d4ff15;border:1px solid #00d4ff33;color:#00d4ff;border-radius:999px;padding:.25rem .75rem;font-size:.75rem;margin-bottom:1rem}
-h1{font-size:1.75rem;font-weight:800;margin-bottom:.4rem;background:linear-gradient(135deg,#00d4ff,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.sub{color:#64748b;font-size:.875rem;margin-bottom:1.5rem}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin-bottom:1.5rem}
-.stat{background:#13131f;border:1px solid #1e1e35;border-radius:10px;padding:.75rem;text-align:center}
-.stat-val{font-size:1.4rem;font-weight:800;color:#00d4ff}
-.stat-lbl{font-size:.7rem;color:#64748b;margin-top:.2rem}
-.controls{display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
-button{padding:.6rem 1.2rem;background:#00d4ff;color:#050508;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.85rem}
-button.sec{background:#13131f;border:1px solid #1e1e35;color:#94a3b8}
-#status{font-size:.8rem;color:#00d4ff;min-height:1.2rem}
-.map-wrap{background:#13131f;border:1px solid #1e1e35;border-radius:12px;padding:1rem;overflow-x:auto}
-#grid-canvas{display:block}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:1.25rem;transition:background .25s,color .25s}
+.container{max-width:1180px;margin:0 auto}
+.topbar{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.75rem;margin-bottom:1rem}
+.badge{display:inline-block;background:#00d4ff15;border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:.25rem .75rem;font-size:.72rem;margin-bottom:.6rem;letter-spacing:.02em}
+h1{font-size:1.85rem;font-weight:800;margin-bottom:.3rem;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sub{color:var(--muted);font-size:.85rem;max-width:46rem}
+.theme-toggle{background:var(--panel);border:1px solid var(--border);color:var(--text);border-radius:999px;padding:.5rem .9rem;cursor:pointer;font-size:.9rem;white-space:nowrap}
+
+.layout{display:grid;grid-template-columns:1fr 300px;gap:1rem}
+@media (max-width:920px){.layout{grid-template-columns:1fr}}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:1rem}
+.panel + .panel{margin-top:1rem}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:.6rem;margin-bottom:1rem}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:.65rem;text-align:center}
+.stat-val{font-size:1.25rem;font-weight:800;color:var(--accent)}
+.stat-lbl{font-size:.65rem;color:var(--muted);margin-top:.15rem;text-transform:uppercase;letter-spacing:.03em}
+
+.controls{display:flex;gap:.6rem;margin-bottom:.9rem;flex-wrap:wrap;align-items:center}
+button{padding:.55rem 1.05rem;background:var(--accent);color:#04121a;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-size:.82rem;transition:transform .12s,opacity .12s}
+button:hover{opacity:.88}
+button:active{transform:scale(.96)}
+button.sec{background:var(--panel2);border:1px solid var(--border);color:var(--text)}
+button.warn{background:var(--accent2);color:#fff}
+button:disabled{opacity:.4;cursor:not-allowed}
+select{background:var(--panel2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:.55rem .7rem;font-size:.82rem;cursor:pointer}
+.speed-wrap{display:flex;align-items:center;gap:.5rem;font-size:.75rem;color:var(--muted)}
+input[type=range]{accent-color:var(--accent);cursor:pointer}
+#status{font-size:.78rem;color:var(--accent);min-height:1.1rem;font-weight:600}
+
+.map-wrap{background:var(--panel2);border:1px solid var(--border);border-radius:12px;padding:1rem;overflow-x:auto}
+.grid-stage{position:relative;display:inline-block}
+#grid-canvas{display:block;border-radius:6px}
+#robot{
+  position:absolute;display:flex;align-items:center;justify-content:center;
+  font-size:16px;line-height:1;pointer-events:none;filter:drop-shadow(0 0 6px var(--accent));
+  transition:left .15s linear, top .15s linear;
+  z-index:5;
+}
+#robot .batt{
+  position:absolute;top:-1.35rem;left:50%;transform:translateX(-50%);
+  font-size:.55rem;font-weight:800;background:var(--panel);border:1px solid var(--border);
+  border-radius:999px;padding:.05rem .4rem;white-space:nowrap;color:var(--ok);
+}
+#robot.charging{animation:pulse 0.6s infinite alternate}
+@keyframes pulse{from{filter:drop-shadow(0 0 4px var(--accent))}to{filter:drop-shadow(0 0 14px var(--warn))}}
+
+.legend{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:.8rem;font-size:.7rem;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:.35rem}
+.swatch{width:.7rem;height:.7rem;border-radius:3px;display:inline-block;border:1px solid var(--border)}
+
+.side-title{font-size:.75rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);margin-bottom:.6rem;font-weight:700}
+
+.compare-bars{display:flex;flex-direction:column;gap:.7rem}
+.bar-row{font-size:.72rem}
+.bar-row .lbl{display:flex;justify-content:space-between;margin-bottom:.25rem;color:var(--muted)}
+.bar-track{background:var(--panel2);border-radius:6px;overflow:hidden;height:10px;border:1px solid var(--border)}
+.bar-fill{height:100%;border-radius:6px}
+.bar-fill.zigzag{background:linear-gradient(90deg,#f5576c,#f5b942)}
+.bar-fill.smart{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.compare-summary{margin-top:.8rem;font-size:.75rem;color:var(--muted);line-height:1.5;border-top:1px dashed var(--border);padding-top:.7rem}
+.compare-summary b{color:var(--ok)}
+
+.hint{font-size:.68rem;color:var(--muted);margin-top:.6rem;line-height:1.5}
 </style>
 </head>
 <body>
 <div class="container">
-  <span class="badge">🤖 C++ Simulation</span>
-  <h1>Smart Cleaning Robot</h1>
-  <p class="sub">Autonomous robot navigating and cleaning a room using systematic coverage algorithm.</p>
-  <div class="stats">
-    <div class="stat"><div class="stat-val" id="s-cleaned">{{cleaned}}</div><div class="stat-lbl">Cells Cleaned</div></div>
-    <div class="stat"><div class="stat-val" id="s-total">{{total}}</div><div class="stat-lbl">Total Cells</div></div>
-    <div class="stat"><div class="stat-val" id="s-eff">{{efficiency}}%</div><div class="stat-lbl">Efficiency</div></div>
+  <div class="topbar">
+    <div>
+      <span class="badge">🤖 Autonomous Coverage Simulation</span>
+      <h1>Smart Cleaning Robot</h1>
+      <p class="sub">Battery-aware robot that plans coverage over dirt levels and furniture obstacles, comparing a naive fixed sweep against a greedy nearest-dirty-cell planner.</p>
+    </div>
+    <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">🌙 Theme</button>
   </div>
-  <div class="controls">
-    <button onclick="startAnimation()">▶ Start Cleaning</button>
-    <button class="sec" onclick="newRoom()">🔀 New Room</button>
-    <span id="status"></span>
+
+  <div class="layout">
+    <div>
+      <div class="panel">
+        <div class="stats">
+          <div class="stat"><div class="stat-val" id="s-steps">0</div><div class="stat-lbl">Ticks</div></div>
+          <div class="stat"><div class="stat-val" id="s-eff">0%</div><div class="stat-lbl">Cell Efficiency</div></div>
+          <div class="stat"><div class="stat-val" id="s-charges">0</div><div class="stat-lbl">Charge Stops</div></div>
+          <div class="stat"><div class="stat-val" id="s-time">0s</div><div class="stat-lbl">Sim. Duration</div></div>
+        </div>
+
+        <div class="controls">
+          <select id="algo-select" onchange="onAlgoChange()">
+            <option value="smart">🧠 Smart (greedy nearest-dirty)</option>
+            <option value="zigzag">↔ Zigzag (naive sweep)</option>
+          </select>
+          <button onclick="togglePlay()" id="play-btn">▶ Play</button>
+          <button class="sec" onclick="restart()">⟲ Restart</button>
+          <button class="sec" onclick="newRoom()">🔀 New Room</button>
+          <button class="warn" onclick="runCompare()">⚖ Compare</button>
+          <div class="speed-wrap">
+            speed
+            <input type="range" id="speed" min="20" max="400" value="140" oninput="onSpeedChange()">
+          </div>
+          <span id="status"></span>
+        </div>
+
+        <div class="map-wrap">
+          <div class="grid-stage" id="grid-stage">
+            <canvas id="grid-canvas"></canvas>
+            <div id="robot">🤖<span class="batt" id="robot-batt">100%</span></div>
+          </div>
+        </div>
+
+        <div class="legend">
+          <span><i class="swatch" style="background:var(--wall)"></i> Wall</span>
+          <span><i class="swatch" style="background:var(--furniture)"></i> Furniture</span>
+          <span><i class="swatch" style="background:var(--dirt3)"></i> Heavy dirt</span>
+          <span><i class="swatch" style="background:var(--dirt1)"></i> Light dirt</span>
+          <span><i class="swatch" style="background:var(--floor)"></i> Clean floor</span>
+          <span>🔌 Charging station</span>
+          <span>🤖 Robot (battery shown above)</span>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel">
+        <div class="side-title">Run Info</div>
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.9">
+          Seed: <b id="i-seed" style="color:var(--text)">-</b><br>
+          Algorithm: <b id="i-algo" style="color:var(--text)">-</b><br>
+          Cleaned cells: <b id="i-cleaned" style="color:var(--text)">-</b><br>
+          Dirt units removed: <b id="i-dirteff" style="color:var(--text)">-</b><br>
+          Battery capacity: <b id="i-batcap" style="color:var(--text)">-</b><br>
+          Finished: <b id="i-finished" style="color:var(--text)">-</b>
+        </div>
+      </div>
+
+      <div class="panel" id="compare-panel" style="display:none">
+        <div class="side-title">Zigzag vs Smart</div>
+        <div class="compare-bars" id="compare-bars"></div>
+        <div class="compare-summary" id="compare-summary"></div>
+      </div>
+
+      <div class="panel">
+        <div class="side-title">How it works</div>
+        <div class="hint">
+          Each floor cell starts with a dirt level (1-3) and needs that many robot visits to become fully clean.
+          The robot has a limited battery; once it drops to the low-battery threshold it path-finds (BFS) to the
+          nearest charging station, recharges, then resumes. <b>Zigzag</b> blindly re-sweeps the whole room in a
+          fixed pattern three times. <b>Smart</b> always BFS-searches for the nearest still-dirty cell, so it
+          never wastes moves revisiting clean ground.
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="map-wrap"><canvas id="grid-canvas"></canvas></div>
 </div>
+
 <script>
-const GRID=JSON.parse('{{grid|safe}}');
-const PATH=JSON.parse('{{path|safe}}');
-const CELL=14;
-let animTimer=null;
-let step=0;
-let cleaned=new Set();
+const CELL = 24;
+let DATA = null;         // last /simulate response
+let dirtLive = null;     // 2D live dirt state used while animating
+let tickIndex = 0;
+let timer = null;
+let playing = false;
+let speedMs = 140;
 
-const canvas=document.getElementById('grid-canvas');
-const rows=GRID.length, cols=GRID[0].length;
-canvas.width=cols*CELL; canvas.height=rows*CELL;
-const ctx=canvas.getContext('2d');
+const canvas = document.getElementById('grid-canvas');
+const ctx = canvas.getContext('2d');
+const robotEl = document.getElementById('robot');
+const robotBatt = document.getElementById('robot-batt');
+const statusEl = document.getElementById('status');
 
-function draw(robotR,robotC){
+function css(varName){
+  return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+}
+
+function dirtColor(level){
+  if(level<=0) return css('--floor');
+  if(level===1) return css('--dirt1');
+  if(level===2) return css('--dirt2');
+  return css('--dirt3');
+}
+
+function drawGrid(){
+  const grid = DATA.grid, rows = grid.length, cols = grid[0].length;
+  canvas.width = cols*CELL; canvas.height = rows*CELL;
+  document.getElementById('grid-stage').style.width = canvas.width+'px';
+  document.getElementById('grid-stage').style.height = canvas.height+'px';
   ctx.clearRect(0,0,canvas.width,canvas.height);
-  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){
-    const x=c*CELL,y=r*CELL;
-    if(GRID[r][c]==='W'){ctx.fillStyle='#374151';}
-    else if(cleaned.has(r+','+c)){ctx.fillStyle='#00d4ff18';}
-    else{ctx.fillStyle='#0e0e16';}
-    ctx.fillRect(x,y,CELL-1,CELL-1);
-  }
-  if(robotR!=null){
-    ctx.fillStyle='#00d4ff';
-    ctx.beginPath();
-    ctx.arc(robotC*CELL+CELL/2,robotR*CELL+CELL/2,CELL/2-1,0,Math.PI*2);
-    ctx.fill();
+  const stationSet = new Set(DATA.stations.map(s=>s[0]+','+s[1]));
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=c*CELL, y=r*CELL;
+      const cell = grid[r][c];
+      if(cell==='W'){ ctx.fillStyle = css('--wall'); ctx.fillRect(x,y,CELL-1,CELL-1); continue; }
+      if(cell==='F'){
+        ctx.fillStyle = css('--furniture');
+        ctx.fillRect(x,y,CELL-1,CELL-1);
+        ctx.strokeStyle = css('--furniture-b');
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x+3,y+CELL-4); ctx.lineTo(x+CELL-4,y+3);
+        ctx.stroke();
+        continue;
+      }
+      // floor (D or C)
+      ctx.fillStyle = dirtColor(dirtLive[r][c]);
+      ctx.fillRect(x,y,CELL-1,CELL-1);
+      if(stationSet.has(r+','+c)){
+        ctx.fillStyle = css('--accent');
+        ctx.beginPath();
+        ctx.arc(x+CELL/2,y+CELL/2,CELL/2-4,0,Math.PI*2);
+        ctx.fill();
+        ctx.fillStyle = '#04121a';
+        ctx.font = (CELL-8)+'px sans-serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('⚡',x+CELL/2,y+CELL/2+1);
+      }
+    }
   }
 }
 
-draw(null,null);
+function placeRobot(r,c,battery,action){
+  robotEl.style.width = CELL+'px';
+  robotEl.style.height = CELL+'px';
+  robotEl.style.left = (c*CELL)+'px';
+  robotEl.style.top = (r*CELL)+'px';
+  robotEl.style.fontSize = (CELL-6)+'px';
+  const pct = Math.round(battery/DATA.battery_capacity*100);
+  robotBatt.textContent = (action==='charging' ? '⚡' : (pct<=20?'🔴':pct<=50?'🟡':'🟢')) + pct + '%';
+  robotEl.classList.toggle('charging', action==='charging');
+}
 
-function startAnimation(){
-  if(animTimer)clearInterval(animTimer);
-  step=0;cleaned=new Set();
-  document.getElementById('status').textContent='Cleaning...';
-  animTimer=setInterval(()=>{
-    if(step>=PATH.length){clearInterval(animTimer);document.getElementById('status').textContent='Done!';draw(null,null);return;}
-    const [r,c]=PATH[step];cleaned.add(r+','+c);draw(r,c);step+=3;
-  },50);
+function applyTick(t){
+  if(dirtLive[t.r] !== undefined) dirtLive[t.r][t.c] = t.dirt;
+}
+
+function resetLiveState(){
+  dirtLive = DATA.dirt_map.map(row=>row.slice());
+  tickIndex = 0;
+}
+
+function renderStats(){
+  document.getElementById('s-steps').textContent = DATA.steps;
+  document.getElementById('s-eff').textContent = DATA.cell_efficiency+'%';
+  document.getElementById('s-charges').textContent = DATA.charge_count;
+  document.getElementById('s-time').textContent = DATA.duration_seconds+'s';
+  document.getElementById('i-seed').textContent = DATA.seed;
+  document.getElementById('i-algo').textContent = DATA.algo;
+  document.getElementById('i-cleaned').textContent = DATA.cleaned_cells+' / '+DATA.total_dirty_cells;
+  document.getElementById('i-dirteff').textContent = DATA.dirt_efficiency+'%';
+  document.getElementById('i-batcap').textContent = DATA.battery_capacity+' moves (low @ '+DATA.low_threshold+')';
+  document.getElementById('i-finished').textContent = DATA.finished ? 'Yes' : 'Partial (tick cap reached)';
+}
+
+function loadAndRender(data){
+  DATA = data;
+  resetLiveState();
+  drawGrid();
+  const first = DATA.path[0];
+  placeRobot(first.r, first.c, first.battery, first.action);
+  renderStats();
+  statusEl.textContent = 'Ready';
+  pause();
+}
+
+async function fetchSimulate(seed, algo){
+  statusEl.textContent = 'Planning...';
+  const resp = await fetch('/simulate?algo='+algo+'&seed='+seed);
+  const data = await resp.json();
+  loadAndRender(data);
+}
+
+function onAlgoChange(){
+  const algo = document.getElementById('algo-select').value;
+  const seed = DATA ? DATA.seed : 42;
+  fetchSimulate(seed, algo);
 }
 
 async function newRoom(){
-  const seed=Math.floor(Math.random()*1000);
-  const resp=await fetch('/new?seed='+seed);
-  const j=await resp.json();
-  document.getElementById('s-cleaned').textContent=j.cleaned;
-  document.getElementById('s-total').textContent=j.total;
-  document.getElementById('s-eff').textContent=j.efficiency+'%';
-  location.reload();
+  const algo = document.getElementById('algo-select').value;
+  statusEl.textContent = 'Generating room...';
+  const resp = await fetch('/new?algo='+algo);
+  const data = await resp.json();
+  loadAndRender(data);
 }
+
+function restart(){
+  pause();
+  resetLiveState();
+  drawGrid();
+  const first = DATA.path[0];
+  placeRobot(first.r, first.c, first.battery, first.action);
+  statusEl.textContent = 'Ready';
+}
+
+function stepOnce(){
+  if(tickIndex >= DATA.path.length-1){
+    pause();
+    statusEl.textContent = DATA.finished ? 'Done — room fully cleaned' : 'Stopped (tick cap reached)';
+    return;
+  }
+  tickIndex++;
+  const t = DATA.path[tickIndex];
+  applyTick(t);
+  drawGrid();
+  placeRobot(t.r, t.c, t.battery, t.action);
+  statusEl.textContent = t.action==='charging' ? 'Charging at station...' : 'Cleaning...';
+}
+
+function play(){
+  if(playing) return;
+  playing = true;
+  document.getElementById('play-btn').textContent = '⏸ Pause';
+  timer = setInterval(stepOnce, speedMs);
+}
+
+function pause(){
+  playing = false;
+  document.getElementById('play-btn').textContent = '▶ Play';
+  if(timer) clearInterval(timer);
+  timer = null;
+}
+
+function togglePlay(){
+  if(playing) pause(); else play();
+}
+
+function onSpeedChange(){
+  speedMs = 420 - parseInt(document.getElementById('speed').value,10);
+  if(playing){ pause(); play(); }
+}
+
+async function runCompare(){
+  const seed = DATA ? DATA.seed : 42;
+  statusEl.textContent = 'Comparing algorithms...';
+  const resp = await fetch('/compare?seed='+seed);
+  const data = await resp.json();
+  renderCompare(data);
+  statusEl.textContent = 'Comparison ready';
+}
+
+function bar(label, zVal, sVal, unit){
+  const max = Math.max(zVal, sVal, 1);
+  return `<div class="bar-row">
+    <div class="lbl"><span>${label}</span><span>zigzag ${zVal}${unit} · smart ${sVal}${unit}</span></div>
+    <div class="bar-track"><div class="bar-fill zigzag" style="width:${(zVal/max*100).toFixed(1)}%"></div></div>
+    <div class="bar-track" style="margin-top:3px"><div class="bar-fill smart" style="width:${(sVal/max*100).toFixed(1)}%"></div></div>
+  </div>`;
+}
+
+function renderCompare(data){
+  const z = data.zigzag, s = data.smart, sum = data.summary;
+  document.getElementById('compare-panel').style.display = 'block';
+  document.getElementById('compare-bars').innerHTML =
+    bar('Total ticks', z.steps, s.steps, '') +
+    bar('Moves', z.moves, s.moves, '') +
+    bar('Charge stops', z.charge_count, s.charge_count, '') +
+    bar('Duration', z.duration_seconds, s.duration_seconds, 's') +
+    bar('Cell efficiency', z.cell_efficiency, s.cell_efficiency, '%');
+  document.getElementById('compare-summary').innerHTML =
+    `Smart finished in <b>${sum.steps_diff}</b> fewer ticks than zigzag ` +
+    `(${z.steps} → ${s.steps}), saving <b>${sum.time_saved_seconds}s</b> of simulated time ` +
+    `and ${sum.charge_diff} charge stop(s). Faster algorithm: <b>${sum.faster_algo}</b>.`;
+}
+
+function toggleTheme(){
+  const root = document.documentElement;
+  const cur = root.getAttribute('data-theme');
+  const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  let next;
+  if(cur === 'light') next = 'dark';
+  else if(cur === 'dark') next = 'light';
+  else next = dark ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try{ localStorage.setItem('scr-theme', next); }catch(e){}
+  drawGrid();
+}
+
+(function initTheme(){
+  try{
+    const saved = localStorage.getItem('scr-theme');
+    if(saved) document.documentElement.setAttribute('data-theme', saved);
+  }catch(e){}
+})();
+
+// initial load
+fetchSimulate({{ default_seed }}, 'smart');
 </script>
 </body>
 </html>

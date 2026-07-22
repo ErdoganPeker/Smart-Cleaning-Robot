@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+# venv/build artifacts
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.log
